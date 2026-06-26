@@ -78,25 +78,25 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>가발 AI 모델 리뷰 <span class="live-dot" id="livedot"></span></h1>
-    <p class="sub">Higgsfield Soul 2.0 학습 모델 5종 · 3040 한국 여성 · 캐주얼샷 2종(실내·야외) · 실시간 동기화</p>
+    <h1>가발 AI 모델 리뷰 <span style="font-size:13px;font-weight:500;color:var(--text-muted);vertical-align:middle;">🔒 익명 투표</span></h1>
+    <p class="sub">Higgsfield Soul 2.0 학습 모델 5종 · 3040 한국 여성 · 캐주얼샷 2종(실내·야외)</p>
   </header>
 
   <div class="banner" id="cfg-banner" style="display:none;">
     ⚠️ Supabase 설정이 필요합니다.
   </div>
 
+  <div class="banner" style="background:#eef4fb;border-color:#bcd4ee;color:#185fa5;">
+    🔒 <b>익명 투표입니다.</b> 다른 사람의 투표·득표수·결과는 표시되지 않으며, 집계는 운영자만 확인합니다. 편하게 마음에 드는 모델을 골라주세요. (다시 누르면 취소)
+  </div>
+
   <div class="meta-bar">
     <label>이름</label>
     <input id="name" type="text" placeholder="팀원 이름 입력" />
-    <span style="color:var(--text-muted); font-size:13px;">이름 입력 후 투표·코멘트가 모두에게 실시간 반영됩니다.</span>
+    <span style="color:var(--text-muted); font-size:13px;">이름을 입력해야 투표가 저장됩니다. (집계 식별용 · 다른 참여자에게는 안 보임)</span>
   </div>
 
   <div class="grid" id="grid"></div>
-
-  <div class="toolbar">
-    <button onclick="exportResults()">결과 내보내기 (텍스트 복사)</button>
-  </div>
 </div>
 
 <div id="toast-wrap"></div>
@@ -139,20 +139,23 @@
       casual: [GEN + 'hf_20260624_054950_ef28d39d-0559-469b-8883-7410f5d8263f.png', GEN + 'hf_20260624_060549_43c04897-e85f-45ac-b7a4-67accd768785.png'] },
   ];
 
+  // 익명(블라인드) 투표 페이지 — anon 키는 INSERT/DELETE만 가능하고 SELECT는 RLS로 차단됨.
+  // 그래서 득표 집계·투표자·코멘트는 이 페이지에서 조회조차 할 수 없다(서버 차원의 블라인드).
+  // 본인 투표 표시는 이 브라우저 localStorage로만 추적한다.
   const configured = SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20;
-  let votes = [];
-  let comments = [];
   let sb = null;
 
   if (!configured) {
     document.getElementById('cfg-banner').style.display = 'block';
   } else {
     sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    initLive();
   }
 
   function myName() { return (document.getElementById('name').value || '').trim(); }
   function localKey() { return 'bnh_name'; }
+  function myVotesKey() { return 'bnh_myvotes_' + (myName() || '_'); }
+  function getMyVotes() { try { return JSON.parse(localStorage.getItem(myVotesKey()) || '{}'); } catch { return {}; } }
+  function setMyVote(id, on) { const v = getMyVotes(); if (on) v[id] = true; else delete v[id]; localStorage.setItem(myVotesKey(), JSON.stringify(v)); }
 
   function toast(msg, type = 'info') {
     const wrap = document.getElementById('toast-wrap');
@@ -168,41 +171,25 @@
     }, type === 'error' ? 4000 : 2200);
   }
 
-  async function loadAll() {
-    const [v, c] = await Promise.all([
-      sb.from('wig_votes').select('model_id,voter_name'),
-      sb.from('wig_comments').select('model_id,author,body').order('created_at', { ascending: true }),
-    ]);
-    votes = v.data || [];
-    comments = c.data || [];
-    render();
-  }
-
-  async function initLive() {
-    await loadAll();
-    sb.channel('wig-review')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'wig_votes' }, loadAll)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'wig_comments' }, loadAll)
-      .subscribe(status => {
-        document.getElementById('livedot').classList.toggle('on', status === 'SUBSCRIBED');
-      });
-  }
-
   async function toggleVote(id) {
     const name = myName();
     if (!name) { toast('먼저 이름을 입력해주세요.', 'error'); document.getElementById('name').focus(); return; }
     const m = MODELS.find(x => x.id === id);
     const title = m ? m.label.split(' — ')[0] : id;
-    const mine = votes.find(v => v.model_id === id && v.voter_name === name);
-    let error;
-    if (mine) {
-      ({ error } = await sb.from('wig_votes').delete().eq('model_id', id).eq('voter_name', name));
+    const voted = !!getMyVotes()[id];
+    if (voted) {
+      const { error } = await sb.from('wig_votes').delete().eq('model_id', id).eq('voter_name', name);
+      if (error) { toast('투표 취소에 실패했어요: ' + error.message, 'error'); return; }
+      setMyVote(id, false);
+      toast(`${title} 투표를 취소했습니다`, 'info');
     } else {
-      ({ error } = await sb.from('wig_votes').insert({ model_id: id, voter_name: name }));
+      const { error } = await sb.from('wig_votes').insert({ model_id: id, voter_name: name });
+      // unique 위반(이미 투표함)도 정상으로 간주
+      if (error && error.code !== '23505') { toast('투표 저장에 실패했어요: ' + error.message, 'error'); return; }
+      setMyVote(id, true);
+      toast(`${title}에 투표 완료!`, 'success');
     }
-    if (error) { toast('투표 저장에 실패했어요: ' + error.message, 'error'); return; }
-    toast(mine ? `${title} 투표를 취소했습니다` : `${title}에 투표 완료!`, mine ? 'info' : 'success');
-    loadAll();
+    render();
   }
 
   async function addComment(id) {
@@ -214,8 +201,7 @@
     const { error } = await sb.from('wig_comments').insert({ model_id: id, author: name, body });
     if (error) { toast('코멘트 저장에 실패했어요: ' + error.message, 'error'); return; }
     ta.value = '';
-    toast('코멘트를 남겼습니다', 'success');
-    loadAll();
+    toast('코멘트가 등록되었습니다 (운영자만 확인)', 'success');
   }
 
   let gallery = { items: [], idx: 0, label: '' };
@@ -253,19 +239,12 @@
   });
 
   function render() {
-    const counts = {};
-    MODELS.forEach(m => counts[m.id] = votes.filter(v => v.model_id === m.id));
-    const max = Math.max(1, ...MODELS.map(m => counts[m.id].length));
-    const name = myName();
+    const mine = getMyVotes();
     document.getElementById('grid').innerHTML = MODELS.map(m => {
-      const vs = counts[m.id];
-      const cs = comments.filter(c => c.model_id === m.id);
-      const isLead = vs.length === max && max > 0 && votes.length > 0;
-      const voted = vs.some(v => v.voter_name === name);
+      const voted = !!mine[m.id];
       return `
-      <div class="card ${isLead ? 'lead' : ''}">
+      <div class="card">
         <div class="imgwrap">
-          ${isLead ? '<span class="rank-badge">최다 득표</span>' : ''}
           <span class="img-tag">Soul 학습 완료</span>
           ${m.casual && m.casual.length ? `<span class="gallery-overlay">📷 프로필 + 캐주얼 ${m.casual.length}장 · 클릭</span>` : ''}
           <img src="${m.img}" alt="${m.label}" onclick="openGallery('${m.id}', 0)" />
@@ -278,13 +257,10 @@
           <div class="desc">${m.desc}</div>
           <div class="soul-id">soul: ${m.soul.slice(0,8)}</div>
           <div class="vote-row">
-            <button class="vote-btn ${voted ? 'voted' : ''}" onclick="toggleVote('${m.id}')">${voted ? '✓ 투표함' : '👍 투표'}</button>
-            <span class="count">${vs.length}</span>
+            <button class="vote-btn ${voted ? 'voted' : ''}" onclick="toggleVote('${m.id}')">${voted ? '✓ 투표함 (다시 누르면 취소)' : '👍 이 모델에 투표'}</button>
           </div>
-          <div class="voters">${vs.length ? '투표: ' + vs.map(v => v.voter_name).join(', ') : ''}</div>
           <div class="comment-area">
-            <textarea id="c-${m.id}" placeholder="코멘트 입력 후 Enter" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addComment('${m.id}')}"></textarea>
-            <div class="comments">${cs.map(c => `<div class="comment"><b>${c.author}</b> ${escapeHtml(c.body)}</div>`).join('')}</div>
+            <textarea id="c-${m.id}" placeholder="의견 입력 후 Enter (운영자만 확인)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addComment('${m.id}')}"></textarea>
           </div>
         </div>
       </div>`;
@@ -292,18 +268,6 @@
   }
 
   function escapeHtml(s) { return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
-  function exportResults() {
-    let out = '가발 AI 모델 리뷰 결과\n\n';
-    MODELS.forEach(m => {
-      const vs = votes.filter(v => v.model_id === m.id);
-      const cs = comments.filter(c => c.model_id === m.id);
-      out += `[${m.label}] 득표 ${vs.length}표 (${vs.map(v=>v.voter_name).join(', ') || '-'})\n`;
-      cs.forEach(c => out += `  · ${c.author}: ${c.body}\n`);
-      out += '\n';
-    });
-    navigator.clipboard.writeText(out).then(() => toast('결과가 클립보드에 복사되었습니다', 'success'));
-  }
 
   const nameInput = document.getElementById('name');
   nameInput.value = localStorage.getItem(localKey()) || '';
