@@ -178,7 +178,9 @@
     const title = m ? m.label.split(' — ')[0] : id;
     const voted = !!getMyVotes()[id];
     if (voted) {
-      const { error } = await sb.from('wig_votes').delete().eq('model_id', id).eq('voter_name', name);
+      // 블라인드(anon SELECT 차단) 상태에선 직접 DELETE가 0행 처리되므로
+      // RLS 우회 함수(cancel_wig_vote)로 취소한다.
+      const { error } = await sb.rpc('cancel_wig_vote', { p_model_id: id, p_voter_name: name });
       if (error) { toast('투표 취소에 실패했어요: ' + error.message, 'error'); return; }
       setMyVote(id, false);
       toast(`${title} 투표를 취소했습니다`, 'info');
