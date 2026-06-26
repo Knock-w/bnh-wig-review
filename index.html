@@ -65,6 +65,14 @@
   .lb-dots { display: flex; gap: 8px; justify-content: center; }
   .lb-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; }
   .lb-dot.active { background: #fff; }
+  #toast-wrap { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
+  .toast { min-width: 180px; max-width: 90vw; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 500; color: #fff; box-shadow: 0 6px 20px rgba(0,0,0,0.18); display: flex; align-items: center; gap: 8px;
+    opacity: 0; transform: translateY(12px); transition: opacity 0.22s ease, transform 0.22s ease; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: #1d9e75; }
+  .toast.error { background: #d4537e; }
+  .toast.info { background: #2c2c2a; }
+  .toast .ic { font-size: 16px; line-height: 1; }
 </style>
 </head>
 <body>
@@ -91,6 +99,8 @@
   </div>
 </div>
 
+<div id="toast-wrap"></div>
+
 <div class="lightbox" id="lightbox" onclick="if(event.target===this)closeGallery()">
   <button class="lb-nav lb-prev" onclick="event.stopPropagation();galleryStep(-1)">‹</button>
   <img id="lightbox-img" src="" alt="" />
@@ -101,11 +111,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // 기존 BNH Supabase 프로젝트 — 새 프로젝트로 옮길 때만 교체.
   const SUPABASE_URL = "https://zilgveexykjkwezyhjyb.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_8EybphDKDxUA4l7j0pawgA__p2I9z4L";
 
-  // BNH 최종 Soul 2.0 학습 모델 5종 (2026-06-22 확정) — 실제 데이터로 채움.
   const CDN = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3FKrjo0I8OJSjlwA4fOVjJdyR46/';
   const GEN = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FKrjo0I8OJSjlwA4fOVjJdyR46/';
   const MODELS = [
@@ -146,6 +154,20 @@
   function myName() { return (document.getElementById('name').value || '').trim(); }
   function localKey() { return 'bnh_name'; }
 
+  function toast(msg, type = 'info') {
+    const wrap = document.getElementById('toast-wrap');
+    const el = document.createElement('div');
+    const ic = type === 'success' ? '✓' : type === 'error' ? '⚠' : 'ℹ';
+    el.className = 'toast ' + type;
+    el.innerHTML = `<span class="ic">${ic}</span><span>${escapeHtml(msg)}</span>`;
+    wrap.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => {
+      el.classList.remove('show');
+      setTimeout(() => el.remove(), 250);
+    }, type === 'error' ? 4000 : 2200);
+  }
+
   async function loadAll() {
     const [v, c] = await Promise.all([
       sb.from('wig_votes').select('model_id,voter_name'),
@@ -168,24 +190,31 @@
 
   async function toggleVote(id) {
     const name = myName();
-    if (!name) { alert('먼저 이름을 입력해주세요.'); return; }
+    if (!name) { toast('먼저 이름을 입력해주세요.', 'error'); document.getElementById('name').focus(); return; }
+    const m = MODELS.find(x => x.id === id);
+    const title = m ? m.label.split(' — ')[0] : id;
     const mine = votes.find(v => v.model_id === id && v.voter_name === name);
+    let error;
     if (mine) {
-      await sb.from('wig_votes').delete().eq('model_id', id).eq('voter_name', name);
+      ({ error } = await sb.from('wig_votes').delete().eq('model_id', id).eq('voter_name', name));
     } else {
-      await sb.from('wig_votes').insert({ model_id: id, voter_name: name });
+      ({ error } = await sb.from('wig_votes').insert({ model_id: id, voter_name: name }));
     }
+    if (error) { toast('투표 저장에 실패했어요: ' + error.message, 'error'); return; }
+    toast(mine ? `${title} 투표를 취소했습니다` : `${title}에 투표 완료!`, mine ? 'info' : 'success');
     loadAll();
   }
 
   async function addComment(id) {
     const name = myName();
-    if (!name) { alert('먼저 이름을 입력해주세요.'); return; }
+    if (!name) { toast('먼저 이름을 입력해주세요.', 'error'); document.getElementById('name').focus(); return; }
     const ta = document.getElementById('c-' + id);
     const body = ta.value.trim();
     if (!body) return;
+    const { error } = await sb.from('wig_comments').insert({ model_id: id, author: name, body });
+    if (error) { toast('코멘트 저장에 실패했어요: ' + error.message, 'error'); return; }
     ta.value = '';
-    await sb.from('wig_comments').insert({ model_id: id, author: name, body });
+    toast('코멘트를 남겼습니다', 'success');
     loadAll();
   }
 
@@ -247,7 +276,7 @@
         <div class="card-body">
           <div class="label">${m.label}</div>
           <div class="desc">${m.desc}</div>
-          <div class="soul-id">${m.soul ? 'soul: ' + m.soul.slice(0,8) : ''}</div>
+          <div class="soul-id">soul: ${m.soul.slice(0,8)}</div>
           <div class="vote-row">
             <button class="vote-btn ${voted ? 'voted' : ''}" onclick="toggleVote('${m.id}')">${voted ? '✓ 투표함' : '👍 투표'}</button>
             <span class="count">${vs.length}</span>
@@ -273,7 +302,7 @@
       cs.forEach(c => out += `  · ${c.author}: ${c.body}\n`);
       out += '\n';
     });
-    navigator.clipboard.writeText(out).then(() => alert('결과가 클립보드에 복사되었습니다.'));
+    navigator.clipboard.writeText(out).then(() => toast('결과가 클립보드에 복사되었습니다', 'success'));
   }
 
   const nameInput = document.getElementById('name');
