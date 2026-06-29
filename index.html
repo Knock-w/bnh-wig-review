@@ -3,279 +3,161 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>가발 AI 모델 리뷰 (실시간) — BNH</title>
+<title>가발 AI 모델 최종 선정 투표 — BNH</title>
 <style>
-  :root {
-    --bg: #faf9f6; --surface: #ffffff; --border: #e8e6df; --border-hover: #cfccc2;
-    --text: #2c2c2a; --text-muted: #75736c; --accent: #d4537e; --accent-bg: #fbeaf0; --info: #185fa5;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", sans-serif;
-    background: var(--bg); color: var(--text); line-height: 1.6; padding: 32px 20px 64px; }
-  .wrap { max-width: 1200px; margin: 0 auto; }
-  h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.3px; }
-  .sub { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
-  .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ccc; margin-left: 6px; vertical-align: middle; }
-  .live-dot.on { background: #1d9e75; }
-  .meta-bar { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin: 20px 0 28px;
-    padding: 14px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; font-size: 14px; }
-  .meta-bar label { color: var(--text-muted); }
-  .meta-bar input { border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; font-size: 14px; font-family: inherit; width: 160px; }
-  .meta-bar input:focus { outline: none; border-color: var(--accent); }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 20px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color 0.15s, transform 0.15s; }
-  .card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
-  .card.lead { border: 2px solid var(--accent); }
-  .imgwrap { position: relative; }
-  .imgwrap > img { width: 100%; display: block; aspect-ratio: 3/4; object-fit: cover; cursor: zoom-in; }
-  .img-tag { position: absolute; top: 8px; right: 8px; z-index: 2; background: rgba(0,0,0,0.55); color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 12px; }
-  .rank-badge { position: absolute; top: 10px; left: 10px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; z-index: 2; }
-  .gallery-overlay { position: absolute; bottom: 8px; left: 8px; z-index: 2; background: rgba(0,0,0,0.6); color: #fff; font-size: 12px; padding: 4px 10px; border-radius: 12px; pointer-events: none; }
-  .thumb-row { display: flex; gap: 6px; padding: 8px 8px 0; }
-  .thumb { flex: 1; width: 0; aspect-ratio: 3/4; object-fit: cover; border-radius: 8px; cursor: zoom-in; border: 1px solid var(--border); transition: border-color 0.12s; }
-  .thumb:hover { border-color: var(--accent); }
-  .card-body { padding: 14px 16px; }
-  .label { font-size: 15px; font-weight: 600; }
-  .desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
-  .soul-id { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: monospace; }
-  .vote-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
-  .vote-btn { flex: 1; border: 1px solid var(--border); background: transparent; border-radius: 8px; padding: 8px; font-size: 13px; font-family: inherit; cursor: pointer; color: var(--text); transition: all 0.12s; font-weight: 500; }
-  .vote-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .vote-btn.voted { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
-  .count { font-size: 18px; font-weight: 700; min-width: 28px; text-align: center; }
-  .voters { font-size: 12px; color: var(--text-muted); margin-top: 8px; min-height: 16px; }
-  .comment-area { margin-top: 12px; }
-  .comment-area textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 38px; }
-  .comment-area textarea:focus { outline: none; border-color: var(--accent); }
-  .comments { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
-  .comment { font-size: 13px; background: var(--bg); border-radius: 8px; padding: 6px 10px; }
-  .comment b { color: var(--info); font-weight: 600; }
-  .toolbar { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
-  .toolbar button { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 9px 16px; font-size: 14px; font-family: inherit; cursor: pointer; color: var(--text); }
-  .toolbar button:hover { border-color: var(--border-hover); }
-  .banner { background: #fff4e5; border: 1px solid #f0c674; border-radius: 10px; padding: 14px 18px; font-size: 14px; margin-bottom: 24px; color: #7a4f00; }
-  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 40px; cursor: zoom-out; flex-direction: column; gap: 14px; }
-  .lightbox.open { display: flex; }
-  .lightbox img { max-width: 100%; max-height: 78vh; border-radius: 8px; }
-  .lb-caption { color: #fff; font-size: 14px; text-align: center; }
-  .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); color: #fff; border: none; width: 48px; height: 48px; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .lb-nav:hover { background: rgba(255,255,255,0.3); }
-  .lb-prev { left: 24px; }
-  .lb-next { right: 24px; }
-  .lb-dots { display: flex; gap: 8px; justify-content: center; }
-  .lb-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; }
-  .lb-dot.active { background: #fff; }
-  #toast-wrap { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
-  .toast { min-width: 180px; max-width: 90vw; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 500; color: #fff; box-shadow: 0 6px 20px rgba(0,0,0,0.18); display: flex; align-items: center; gap: 8px;
-    opacity: 0; transform: translateY(12px); transition: opacity 0.22s ease, transform 0.22s ease; }
-  .toast.show { opacity: 1; transform: translateY(0); }
-  .toast.success { background: #1d9e75; }
-  .toast.error { background: #d4537e; }
-  .toast.info { background: #2c2c2a; }
-  .toast .ic { font-size: 16px; line-height: 1; }
+  :root { --bg:#faf9f6; --surface:#fff; --border:#e8e6df; --border-hover:#cfccc2; --text:#2c2c2a;
+    --text-muted:#75736c; --accent:#d4537e; --accent-bg:#fbeaf0; --info:#185fa5; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo","Pretendard",sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.6; padding:32px 20px 64px; }
+  .wrap { max-width:1100px; margin:0 auto; }
+  h1 { font-size:24px; font-weight:600; letter-spacing:-0.3px; }
+  .sub { color:var(--text-muted); font-size:14px; margin-top:4px; }
+  .live-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#ccc; margin-left:6px; vertical-align:middle; }
+  .live-dot.on { background:#1d9e75; }
+  .blind-note { background:#eef4fb; border:1px solid #c7dbf0; border-radius:10px; padding:12px 16px; font-size:13px; color:#1c4e85; margin:14px 0 0; }
+  .meta-bar { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin:18px 0 28px; padding:14px 18px;
+    background:var(--surface); border:1px solid var(--border); border-radius:12px; font-size:14px; }
+  .meta-bar input { border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:14px; font-family:inherit; width:180px; }
+  .meta-bar input:focus { outline:none; border-color:var(--accent); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:22px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; transition:border-color .15s, transform .15s; }
+  .card:hover { border-color:var(--border-hover); }
+  .card.mine { border:2px solid var(--accent); }
+  .imgwrap { position:relative; }
+  .imgwrap > img { width:100%; display:block; aspect-ratio:3/4; object-fit:cover; cursor:zoom-in; }
+  .thumb-row { display:flex; gap:6px; padding:8px 8px 0; }
+  .thumb { flex:1; width:0; aspect-ratio:3/4; object-fit:cover; border-radius:8px; cursor:zoom-in; border:1px solid var(--border); }
+  .thumb:hover { border-color:var(--accent); }
+  .card-body { padding:14px 16px; }
+  .label { font-size:16px; font-weight:600; }
+  .desc { font-size:13px; color:var(--text-muted); margin-top:2px; }
+  .soul-id { font-size:11px; color:var(--text-muted); margin-top:4px; font-family:ui-monospace,Menlo,monospace; }
+  .vote-btn { width:100%; margin-top:14px; border:1px solid var(--border); background:transparent; border-radius:9px; padding:11px;
+    font-size:14px; font-family:inherit; cursor:pointer; color:var(--text); transition:all .12s; font-weight:600; }
+  .vote-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .vote-btn.voted { background:var(--accent-bg); border-color:var(--accent); color:var(--accent); }
+  .comment-area { margin-top:10px; }
+  .comment-area textarea { width:100%; border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:13px; font-family:inherit; resize:vertical; min-height:38px; }
+  .comment-area textarea:focus { outline:none; border-color:var(--accent); }
+  .csent { font-size:12px; color:#1d9e75; margin-top:4px; min-height:15px; }
+  .lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:100; align-items:center; justify-content:center; padding:40px; cursor:zoom-out; }
+  .lightbox.open { display:flex; } .lightbox img { max-width:100%; max-height:90vh; border-radius:8px; }
+  .banner { background:#fff4e5; border:1px solid #f0c674; border-radius:10px; padding:14px 18px; font-size:14px; margin-bottom:20px; color:#7a4f00; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>가발 AI 모델 리뷰 <span style="font-size:13px;font-weight:500;color:var(--text-muted);vertical-align:middle;">🔒 익명 투표</span></h1>
-    <p class="sub">Higgsfield Soul 2.0 학습 모델 5종 · 3040 한국 여성 · 캐주얼샷 2종(실내·야외)</p>
+    <h1>가발 AI 모델 최종 선정 투표 <span class="live-dot" id="livedot"></span></h1>
+    <p class="sub">Higgsfield Soul 2.0 학습 모델 3종 · 3040 한국 여성 · 각 모델 대표컷 + 추가컷. 가장 적합한 모델에 투표해주세요.</p>
   </header>
 
-  <div class="banner" id="cfg-banner" style="display:none;">
-    ⚠️ Supabase 설정이 필요합니다.
-  </div>
-
-  <div class="banner" style="background:#eef4fb;border-color:#bcd4ee;color:#185fa5;">
-    🔒 <b>익명 투표입니다.</b> 다른 사람의 투표·득표수·결과는 표시되지 않으며, 집계는 운영자만 확인합니다. 편하게 마음에 드는 모델을 골라주세요. (다시 누르면 취소)
-  </div>
+  <div class="banner" id="cfg-banner" style="display:none;">⚠️ Supabase 설정이 필요합니다.</div>
+  <div class="blind-note">🔒 <b>블라인드 투표</b>입니다. 다른 사람의 득표수·투표 내역은 공개되지 않습니다(서로 영향 방지). 본인이 투표한 항목만 표시됩니다. 좋다고 생각하는 모델에 자유롭게 투표하세요(여러 개 가능).</div>
 
   <div class="meta-bar">
     <label>이름</label>
-    <input id="name" type="text" placeholder="팀원 이름 입력" />
-    <span style="color:var(--text-muted); font-size:13px;">이름을 입력해야 투표가 저장됩니다. (집계 식별용 · 다른 참여자에게는 안 보임)</span>
+    <input id="name" type="text" placeholder="이름 입력" />
+    <span style="color:var(--text-muted); font-size:13px;">이름 입력 후 투표·코멘트가 가능합니다.</span>
   </div>
 
   <div class="grid" id="grid"></div>
 </div>
 
-<div id="toast-wrap"></div>
-
-<div class="lightbox" id="lightbox" onclick="if(event.target===this)closeGallery()">
-  <button class="lb-nav lb-prev" onclick="event.stopPropagation();galleryStep(-1)">‹</button>
-  <img id="lightbox-img" src="" alt="" />
-  <div class="lb-caption" id="lb-caption"></div>
-  <div class="lb-dots" id="lb-dots"></div>
-  <button class="lb-nav lb-next" onclick="event.stopPropagation();galleryStep(1)">›</button>
-</div>
+<div class="lightbox" id="lb" onclick="this.classList.remove('open')"><img id="lbimg" alt=""></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://zilgveexykjkwezyhjyb.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_8EybphDKDxUA4l7j0pawgA__p2I9z4L";
+  const CDN = "https://d8j0ntlcm91z4.cloudfront.net/user_3FKrjo0I8OJSjlwA4fOVjJdyR46/";
 
-  const CDN = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3FKrjo0I8OJSjlwA4fOVjJdyR46/';
-  const GEN = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FKrjo0I8OJSjlwA4fOVjJdyR46/';
+  // G3 적용 컷으로 구성한 최종 후보 3종 (model_id는 기존 M1~M5와 겹치지 않게 SEL_ 접두)
   const MODELS = [
-    { id: 'M1', label: 'M1 — 둥근·밝고 친근', desc: '30대 중반 · 한국 여성',
-      soul: '14915dbe-5d69-4c79-b397-b5ce10f9abbe',
-      img: GEN + 'hf_20260622_050205_4a4077d9-0eff-4b6b-a2dd-7e67ad764230.png',
-      casual: [GEN + 'hf_20260624_052624_40a65e30-af69-4d3a-b3ea-b3dd1daf593f.png', GEN + 'hf_20260624_041243_7c32192f-5867-4181-a59b-3b27b9b6ffe2.png'] },
-    { id: 'M2', label: 'M2 — 하트형·부드러운', desc: '30대 후반 · 한국 여성',
-      soul: '5eaefb4e-a810-4a48-b37b-9e246acfd2e9',
-      img: GEN + 'hf_20260624_023356_60a93c41-d61d-42ef-a218-edf121f52d7b.png',
-      casual: [GEN + 'hf_20260624_061554_2ea62b2d-c512-4ce7-93d1-026fa7300d21.png', GEN + 'hf_20260624_070403_4c04a386-4544-46b4-b58b-66e8890ea05c.png'] },
-    { id: 'M3', label: 'M3 — 시크·모던', desc: '30대 후반 · 한국 여성',
-      soul: '26f82925-4135-4f0d-85a6-54aeda849dee',
-      img: CDN + '07a37efe-bbd4-47d6-be32-144271b28e40.png',
-      casual: [GEN + 'hf_20260624_083011_e18e6471-fb8b-423e-b408-27e3b2b57e2c.png', GEN + 'hf_20260624_052633_b1676e7b-2962-4d30-a318-8d46f37f27b6.png'] },
-    { id: 'M4', label: 'M4 — 따뜻·자연스러운', desc: '30대 후반 · 한국 여성',
-      soul: 'aa1248d3-51df-443f-a9d2-e5fec457f25b',
-      img: CDN + '11f6138f-577e-49c4-9276-e3e078c95a60.png',
-      casual: [GEN + 'hf_20260624_054923_2e1428b3-c2aa-41a8-a322-684cb9678747.png', GEN + 'hf_20260624_092641_d1083dd3-e651-4949-ae2b-c30a60de89b3.png'] },
-    { id: 'M5', label: 'M5 — 화사·생기', desc: '40대 초반 · 한국 여성',
-      soul: 'ae8444f8-445d-4d9b-ba5f-faa8ec451145',
-      img: GEN + 'hf_20260622_023458_f61f81ff-81b7-4c82-a5a5-e24805fa93bd.png',
-      casual: [GEN + 'hf_20260624_054950_ef28d39d-0559-469b-8883-7410f5d8263f.png', GEN + 'hf_20260624_060549_43c04897-e85f-45ac-b7a4-67accd768785.png'] },
+    { id:'SEL_A', label:'A · 둥근·밝고 친근', desc:'30대 중반 · 따뜻하고 친근한 인상',
+      soul:'aa2cf997-e3eb-4966-b4ec-ee057289e4c3',
+      img: CDN+'hf_20260629_031209_6425844d-1474-447c-a567-abb7ceb431fe.png',
+      cuts:[ CDN+'hf_20260629_031215_bb844862-8f09-42a6-be13-75a4a90783f7.png' ] },
+    { id:'SEL_B', label:'B · 또렷·지적·시크', desc:'30대 후반 · 또렷한 이목구비, 모던/시크',
+      soul:'000b0bb7-64dd-45f5-b0b0-1e2956019e4b',
+      img: CDN+'hf_20260629_040048_d9828ddf-aac9-4236-a7f0-bf0b200b5a11.png',
+      cuts:[ CDN+'hf_20260629_040051_2aa66e87-b697-4812-8b6d-39d57be542c9.png' ] },
+    { id:'SEL_C', label:'C · 동안·화사·생기', desc:'40대 초반 · 동안에 화사하고 생기있는 분위기',
+      soul:'d8787dee-9583-4b15-a251-29b99d47cd2c',
+      img: CDN+'hf_20260629_040055_8cfe875f-a252-4be3-86f4-0692aa1f29d7.png',
+      cuts:[ CDN+'hf_20260629_040057_316c27f8-78f5-470a-9569-79e2b9dff7da.png' ] },
   ];
 
-  // 익명(블라인드) 투표 페이지 — anon 키는 INSERT/DELETE만 가능하고 SELECT는 RLS로 차단됨.
-  // 그래서 득표 집계·투표자·코멘트는 이 페이지에서 조회조차 할 수 없다(서버 차원의 블라인드).
-  // 본인 투표 표시는 이 브라우저 localStorage로만 추적한다.
   const configured = SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20;
   let sb = null;
+  if (!configured) { document.getElementById('cfg-banner').style.display='block'; }
+  else { sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); document.getElementById('livedot').classList.add('on'); }
 
-  if (!configured) {
-    document.getElementById('cfg-banner').style.display = 'block';
-  } else {
-    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
+  function myName(){ return (document.getElementById('name').value||'').trim(); }
+  function myVotesKey(){ return 'bnh_sel_myvotes_' + myName(); }
+  function myVotes(){ try { return JSON.parse(localStorage.getItem(myVotesKey())||'[]'); } catch(e){ return []; } }
+  function setMyVotes(a){ localStorage.setItem(myVotesKey(), JSON.stringify(a)); }
 
-  function myName() { return (document.getElementById('name').value || '').trim(); }
-  function localKey() { return 'bnh_name'; }
-  // 라운드 값을 올리면 모든 참여자의 브라우저 투표 상태가 초기화된다(데이터 리셋과 함께 변경).
-  const VOTE_ROUND = 'r2-20260626';
-  function myVotesKey() { return 'bnh_myvotes_' + VOTE_ROUND + '_' + (myName() || '_'); }
-  function getMyVotes() { try { return JSON.parse(localStorage.getItem(myVotesKey()) || '{}'); } catch { return {}; } }
-  function setMyVote(id, on) { const v = getMyVotes(); if (on) v[id] = true; else delete v[id]; localStorage.setItem(myVotesKey(), JSON.stringify(v)); }
-
-  function toast(msg, type = 'info') {
-    const wrap = document.getElementById('toast-wrap');
-    const el = document.createElement('div');
-    const ic = type === 'success' ? '✓' : type === 'error' ? '⚠' : 'ℹ';
-    el.className = 'toast ' + type;
-    el.innerHTML = `<span class="ic">${ic}</span><span>${escapeHtml(msg)}</span>`;
-    wrap.appendChild(el);
-    requestAnimationFrame(() => el.classList.add('show'));
-    setTimeout(() => {
-      el.classList.remove('show');
-      setTimeout(() => el.remove(), 250);
-    }, type === 'error' ? 4000 : 2200);
-  }
-
-  async function toggleVote(id) {
+  async function toggleVote(id){
     const name = myName();
-    if (!name) { toast('먼저 이름을 입력해주세요.', 'error'); document.getElementById('name').focus(); return; }
-    const m = MODELS.find(x => x.id === id);
-    const title = m ? m.label.split(' — ')[0] : id;
-    const voted = !!getMyVotes()[id];
-    if (voted) {
-      // 블라인드(anon SELECT 차단) 상태에선 직접 DELETE가 0행 처리되므로
-      // RLS 우회 함수(cancel_wig_vote)로 취소한다.
-      const { error } = await sb.rpc('cancel_wig_vote', { p_model_id: id, p_voter_name: name });
-      if (error) { toast('투표 취소에 실패했어요: ' + error.message, 'error'); return; }
-      setMyVote(id, false);
-      toast(`${title} 투표를 취소했습니다`, 'info');
+    if (!name){ alert('먼저 이름을 입력해주세요.'); return; }
+    const mine = myVotes();
+    const has = mine.includes(id);
+    if (has){
+      // 취소 — 블라인드(anon SELECT 차단) 환경에서 DELETE가 안 되므로 SECURITY DEFINER RPC 사용
+      const { error } = await sb.rpc('cancel_wig_vote', { p_model_id:id, p_voter_name:name });
+      if (error){ console.warn(error); }
+      setMyVotes(mine.filter(x=>x!==id));
     } else {
-      const { error } = await sb.from('wig_votes').insert({ model_id: id, voter_name: name });
-      // unique 위반(이미 투표함)도 정상으로 간주
-      if (error && error.code !== '23505') { toast('투표 저장에 실패했어요: ' + error.message, 'error'); return; }
-      setMyVote(id, true);
-      toast(`${title}에 투표 완료!`, 'success');
+      const { error } = await sb.from('wig_votes').insert({ model_id:id, voter_name:name });
+      if (error && error.code !== '23505'){ alert('투표 저장 중 오류: '+error.message); return; } // 23505=이미 투표(unique)
+      if (!mine.includes(id)) mine.push(id);
+      setMyVotes(mine);
     }
     render();
   }
 
-  async function addComment(id) {
+  async function addComment(id){
     const name = myName();
-    if (!name) { toast('먼저 이름을 입력해주세요.', 'error'); document.getElementById('name').focus(); return; }
-    const ta = document.getElementById('c-' + id);
+    if (!name){ alert('먼저 이름을 입력해주세요.'); return; }
+    const ta = document.getElementById('c-'+id);
     const body = ta.value.trim();
     if (!body) return;
-    const { error } = await sb.from('wig_comments').insert({ model_id: id, author: name, body });
-    if (error) { toast('코멘트 저장에 실패했어요: ' + error.message, 'error'); return; }
     ta.value = '';
-    toast('코멘트가 등록되었습니다 (운영자만 확인)', 'success');
+    const { error } = await sb.from('wig_comments').insert({ model_id:id, author:name, body });
+    const fb = document.getElementById('cs-'+id);
+    fb.textContent = error ? '전송 실패: '+error.message : '의견이 전달되었습니다. 감사합니다!';
+    setTimeout(()=>{ fb.textContent=''; }, 4000);
   }
 
-  let gallery = { items: [], idx: 0, label: '' };
+  function zoom(src){ document.getElementById('lbimg').src=src; document.getElementById('lb').classList.add('open'); }
 
-  function openGallery(modelId, startIdx) {
-    const m = MODELS.find(x => x.id === modelId);
-    if (!m) return;
-    const profile = { src: m.img, tag: '스튜디오 프로필' };
-    const casuals = (m.casual || []).map((src, i) => ({ src, tag: `캐주얼 일상 샷 ${i + 1}` }));
-    gallery = { items: [profile, ...casuals], idx: startIdx || 0, label: m.label };
-    renderGallery();
-    document.getElementById('lightbox').classList.add('open');
-  }
-
-  function renderGallery() {
-    const cur = gallery.items[gallery.idx];
-    document.getElementById('lightbox-img').src = cur.src;
-    document.getElementById('lb-caption').textContent = `${gallery.label} · ${cur.tag} (${gallery.idx + 1}/${gallery.items.length})`;
-    document.getElementById('lb-dots').innerHTML = gallery.items
-      .map((_, i) => `<div class="lb-dot ${i === gallery.idx ? 'active' : ''}" onclick="event.stopPropagation();galleryGo(${i})"></div>`).join('');
-  }
-
-  function galleryStep(d) {
-    gallery.idx = (gallery.idx + d + gallery.items.length) % gallery.items.length;
-    renderGallery();
-  }
-  function galleryGo(i) { gallery.idx = i; renderGallery(); }
-  function closeGallery() { document.getElementById('lightbox').classList.remove('open'); }
-
-  document.addEventListener('keydown', e => {
-    if (!document.getElementById('lightbox').classList.contains('open')) return;
-    if (e.key === 'ArrowLeft') galleryStep(-1);
-    else if (e.key === 'ArrowRight') galleryStep(1);
-    else if (e.key === 'Escape') closeGallery();
-  });
-
-  function render() {
-    const mine = getMyVotes();
-    document.getElementById('grid').innerHTML = MODELS.map(m => {
-      const voted = !!mine[m.id];
+  function render(){
+    const mine = myVotes();
+    document.getElementById('grid').innerHTML = MODELS.map(m=>{
+      const voted = mine.includes(m.id);
       return `
-      <div class="card">
-        <div class="imgwrap">
-          <span class="img-tag">Soul 학습 완료</span>
-          ${m.casual && m.casual.length ? `<span class="gallery-overlay">📷 프로필 + 캐주얼 ${m.casual.length}장 · 클릭</span>` : ''}
-          <img src="${m.img}" alt="${m.label}" onclick="openGallery('${m.id}', 0)" />
-        </div>
-        ${m.casual && m.casual.length ? `<div class="thumb-row">
-          ${m.casual.map((src, i) => `<img class="thumb" src="${src}" alt="캐주얼 ${i+1}" onclick="openGallery('${m.id}', ${i+1})" />`).join('')}
-        </div>` : ''}
+      <div class="card ${voted?'mine':''}">
+        <div class="imgwrap"><img src="${m.img}" alt="${m.label}" onclick="zoom('${m.img}')"></div>
+        ${m.cuts && m.cuts.length ? `<div class="thumb-row">${m.cuts.map(s=>`<img class="thumb" src="${s}" onclick="zoom('${s}')">`).join('')}</div>`:''}
         <div class="card-body">
           <div class="label">${m.label}</div>
           <div class="desc">${m.desc}</div>
           <div class="soul-id">soul: ${m.soul.slice(0,8)}</div>
-          <div class="vote-row">
-            <button class="vote-btn ${voted ? 'voted' : ''}" onclick="toggleVote('${m.id}')">${voted ? '✓ 투표함 (다시 누르면 취소)' : '👍 이 모델에 투표'}</button>
-          </div>
+          <button class="vote-btn ${voted?'voted':''}" onclick="toggleVote('${m.id}')">${voted?'✓ 투표함 (취소하려면 클릭)':'👍 이 모델에 투표'}</button>
           <div class="comment-area">
-            <textarea id="c-${m.id}" placeholder="의견 입력 후 Enter (운영자만 확인)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addComment('${m.id}')}"></textarea>
+            <textarea id="c-${m.id}" placeholder="이 모델에 대한 의견 (선택)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addComment('${m.id}')}"></textarea>
+            <div class="csent" id="cs-${m.id}"></div>
           </div>
         </div>
       </div>`;
     }).join('');
   }
 
-  function escapeHtml(s) { return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
   const nameInput = document.getElementById('name');
-  nameInput.value = localStorage.getItem(localKey()) || '';
-  nameInput.addEventListener('input', () => { localStorage.setItem(localKey(), nameInput.value); render(); });
+  nameInput.value = localStorage.getItem('bnh_name') || '';
+  nameInput.addEventListener('input', ()=>{ localStorage.setItem('bnh_name', nameInput.value); render(); });
   render();
 </script>
 </body>
