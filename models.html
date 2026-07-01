@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BNH 최종 모델 라인업 — B · M1 · M5</title><style>
+:root{--bg:#faf9f6;--surface:#fff;--border:#e8e6df;--border-hover:#cfccc2;--text:#2c2c2a;--text-muted:#75736c;--accent:#d4537e;--accent-bg:#fbeaf0;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:32px 20px 64px;}
+.wrap{max-width:1100px;margin:0 auto;} h1{font-size:24px;font-weight:600;letter-spacing:-0.3px;} .sub{color:var(--text-muted);font-size:14px;margin-top:4px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;margin-top:24px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color .15s,transform .15s;}
+.card:hover{border-color:var(--border-hover);transform:translateY(-2px);}
+.imgwrap img{width:100%;display:block;aspect-ratio:3/4;object-fit:cover;cursor:zoom-in;}
+.card-body{padding:14px 16px;} .label{font-size:16px;font-weight:600;} .desc{font-size:13px;color:var(--text-muted);margin-top:2px;}
+.soul-id{font-size:11px;color:var(--text-muted);margin-top:4px;font-family:ui-monospace,Menlo,monospace;}
+.cta{display:inline-block;margin-top:26px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:11px 20px;border-radius:10px;}
+.cta:hover{opacity:.92;}
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;padding:40px;cursor:zoom-out;}
+.lightbox.open{display:flex;} .lightbox img{max-width:100%;max-height:90vh;border-radius:8px;}
+</style></head><body>
+<div class="wrap">
+  <header><h1>BNH 최종 모델 라인업</h1>
+  <p class="sub">Higgsfield Soul 2.0 학습 · 3040 한국 여성 · 최종 확정 3모델 (가발 착용 전·후 제작 완료). 이미지 클릭 시 확대.</p></header>
+  <div class="grid">
+      <div class="card">
+        <div class="imgwrap"><img loading="lazy" src="img/ba_B_after.webp" alt="B · 또렷·지적·시크" onclick="zoom(this.src)"></div>
+        <div class="card-body"><div class="label">B · 또렷·지적·시크</div><div class="desc">30대 후반 · 또렷한 이목구비, 모던/시크</div>
+          <div class="soul-id">soul: 000b0bb7</div></div>
+      </div>
+      <div class="card">
+        <div class="imgwrap"><img loading="lazy" src="img/ba_M1_after.webp" alt="M1 · 둥근·밝고 친근" onclick="zoom(this.src)"></div>
+        <div class="card-body"><div class="label">M1 · 둥근·밝고 친근</div><div class="desc">30대 중반 · 둥근 얼굴, 밝고 친근</div>
+          <div class="soul-id">soul: 14915dbe</div></div>
+      </div>
+      <div class="card">
+        <div class="imgwrap"><img loading="lazy" src="img/ba_M5_after.webp" alt="M5 · 동안·화사·생기" onclick="zoom(this.src)"></div>
+        <div class="card-body"><div class="label">M5 · 동안·화사·생기</div><div class="desc">40대 초반 · 동안에 화사하고 생기있는</div>
+          <div class="soul-id">soul: ae8444f8</div></div>
+      </div>
+  </div>
+  <a class="cta" href="before-after.html">가발 착용 전·후 비교 보기 →</a>
+</div>
+<div class="lightbox" id="lb" onclick="this.classList.remove('open')"><img id="lbimg"></div>
+<script>function zoom(s){document.getElementById('lbimg').src=s;document.getElementById('lb').classList.add('open');}</script>
+</body></html>
