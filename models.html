@@ -15,8 +15,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretend
 .cta:hover{opacity:.92;}
 .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;padding:40px;cursor:zoom-out;}
 .lightbox.open{display:flex;} .lightbox img{max-width:100%;max-height:90vh;border-radius:8px;}
+
+  .nav{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+  .nav a{font-size:13px;font-weight:600;text-decoration:none;color:var(--text-muted);padding:7px 14px;border:1px solid var(--border);border-radius:999px;background:var(--surface);}
+  .nav a:hover{border-color:var(--border-hover);color:var(--text);}
+  .nav a.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 </style></head><body>
 <div class="wrap">
+  <nav class="nav"><a href="models.html" class="active">최종 모델</a><a href="before-after.html">전·후 비교</a><a href="index.html">선정 투표</a></nav>
+
   <header><h1>BNH 최종 모델 라인업</h1>
   <p class="sub">Higgsfield Soul 2.0 학습 · 3040 한국 여성 · 최종 확정 3모델 (가발 착용 전·후 제작 완료). 이미지 클릭 시 확대.</p></header>
   <div class="grid">

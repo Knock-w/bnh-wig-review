@@ -17,8 +17,15 @@ figcaption{text-align:center;font-size:13px;font-weight:600;margin-top:8px;} fig
 .arrow{font-size:26px;color:var(--accent);font-weight:700;}
 .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100;align-items:center;justify-content:center;padding:32px;cursor:zoom-out;}
 .lightbox.open{display:flex;} .lightbox img{max-width:100%;max-height:92vh;border-radius:8px;}
+
+  .nav{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+  .nav a{font-size:13px;font-weight:600;text-decoration:none;color:var(--text-muted);padding:7px 14px;border:1px solid var(--border);border-radius:999px;background:var(--surface);}
+  .nav a:hover{border-color:var(--border-hover);color:var(--text);}
+  .nav a.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 </style></head><body>
-<div class="wrap"><header><h1>가발 착용 전·후 비교 — 기본 모델 B · M1 · M5</h1>
+<div class="wrap">
+  <nav class="nav"><a href="models.html">최종 모델</a><a href="before-after.html" class="active">전·후 비교</a><a href="index.html">선정 투표</a></nav>
+<header><h1>가발 착용 전·후 비교 — 기본 모델 B · M1 · M5</h1>
 <p class="sub">정수리 모량 부족·가르마 비침·볼륨 부족을 커버하는 가발 제품. 같은 모델·같은 포즈에서 머리만 변화. 이미지 클릭 시 확대.</p></header>
     <div class="row">
       <div class="rowhead"><span class="mname">B · 또렷·지적·시크</span><span class="mmeta">· 30대 후반</span></div>

@@ -44,10 +44,17 @@
   .lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:100; align-items:center; justify-content:center; padding:40px; cursor:zoom-out; }
   .lightbox.open { display:flex; } .lightbox img { max-width:100%; max-height:90vh; border-radius:8px; }
   .banner { background:#fff4e5; border:1px solid #f0c674; border-radius:10px; padding:14px 18px; font-size:14px; margin-bottom:20px; color:#7a4f00; }
+
+  .nav{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+  .nav a{font-size:13px;font-weight:600;text-decoration:none;color:var(--text-muted);padding:7px 14px;border:1px solid var(--border);border-radius:999px;background:var(--surface);}
+  .nav a:hover{border-color:var(--border-hover);color:var(--text);}
+  .nav a.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <nav class="nav"><a href="models.html">최종 모델</a><a href="before-after.html">전·후 비교</a><a href="index.html" class="active">선정 투표</a></nav>
+
   <header>
     <h1>가발 AI 모델 최종 선정 투표 <span class="live-dot" id="livedot"></span></h1>
     <p class="sub">Higgsfield Soul 2.0 학습 모델 3종 · 3040 한국 여성 · 각 모델 대표컷 + 추가컷. 가장 적합한 모델에 투표해주세요.</p>
