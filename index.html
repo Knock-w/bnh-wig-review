@@ -3,38 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>가발 AI 모델 최종 선정 투표 — BNH</title>
+<title>가발 AI 모델 선정 투표 — BNH</title>
 <style>
-  :root { --bg:#faf9f6; --surface:#fff; --border:#e8e6df; --border-hover:#cfccc2; --text:#2c2c2a;
-    --text-muted:#75736c; --accent:#d4537e; --accent-bg:#fbeaf0; --info:#185fa5; }
+  :root { --bg:#faf9f6; --surface:#fff; --border:#e8e6df; --border-hover:#cfccc2; --text:#2c2c2a; --text-muted:#75736c; --accent:#d4537e; --accent-bg:#fbeaf0; --info:#185fa5; }
   * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family:-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo","Pretendard",sans-serif;
-    background:var(--bg); color:var(--text); line-height:1.6; padding:32px 20px 64px; }
+  body { font-family:-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo","Pretendard",sans-serif; background:var(--bg); color:var(--text); line-height:1.6; padding:32px 20px 64px; }
   .wrap { max-width:1100px; margin:0 auto; }
   h1 { font-size:24px; font-weight:600; letter-spacing:-0.3px; }
   .sub { color:var(--text-muted); font-size:14px; margin-top:4px; }
   .live-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#ccc; margin-left:6px; vertical-align:middle; }
   .live-dot.on { background:#1d9e75; }
   .blind-note { background:#eef4fb; border:1px solid #c7dbf0; border-radius:10px; padding:12px 16px; font-size:13px; color:#1c4e85; margin:14px 0 0; }
-  .meta-bar { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin:18px 0 28px; padding:14px 18px;
-    background:var(--surface); border:1px solid var(--border); border-radius:12px; font-size:14px; }
+  .meta-bar { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin:18px 0 8px; padding:14px 18px; background:var(--surface); border:1px solid var(--border); border-radius:12px; font-size:14px; }
   .meta-bar input { border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:14px; font-family:inherit; width:180px; }
   .meta-bar input:focus { outline:none; border-color:var(--accent); }
-  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:22px; }
-  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; transition:border-color .15s, transform .15s; }
-  .card:hover { border-color:var(--border-hover); }
+  .rounds { display:flex; gap:8px; margin:18px 0 6px; flex-wrap:wrap; }
+  .rounds button { font-size:14px; font-weight:600; font-family:inherit; cursor:pointer; padding:9px 16px; border:1px solid var(--border); border-radius:999px; background:var(--surface); color:var(--text-muted); }
+  .rounds button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .round-sub { color:var(--text-muted); font-size:13px; margin:2px 0 18px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:20px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:border-color .15s; }
   .card.mine { border:2px solid var(--accent); }
-  .imgwrap { position:relative; }
   .imgwrap > img { width:100%; display:block; aspect-ratio:3/4; object-fit:cover; cursor:zoom-in; }
   .thumb-row { display:flex; gap:6px; padding:8px 8px 0; }
   .thumb { flex:1; width:0; aspect-ratio:3/4; object-fit:cover; border-radius:8px; cursor:zoom-in; border:1px solid var(--border); }
   .thumb:hover { border-color:var(--accent); }
   .card-body { padding:14px 16px; }
-  .label { font-size:16px; font-weight:600; }
-  .desc { font-size:13px; color:var(--text-muted); margin-top:2px; }
+  .label { font-size:15px; font-weight:600; } .desc { font-size:13px; color:var(--text-muted); margin-top:2px; }
   .soul-id { font-size:11px; color:var(--text-muted); margin-top:4px; font-family:ui-monospace,Menlo,monospace; }
-  .vote-btn { width:100%; margin-top:14px; border:1px solid var(--border); background:transparent; border-radius:9px; padding:11px;
-    font-size:14px; font-family:inherit; cursor:pointer; color:var(--text); transition:all .12s; font-weight:600; }
+  .vote-btn { width:100%; margin-top:14px; border:1px solid var(--border); background:transparent; border-radius:9px; padding:11px; font-size:14px; font-family:inherit; cursor:pointer; color:var(--text); transition:all .12s; font-weight:600; }
   .vote-btn:hover { border-color:var(--accent); color:var(--accent); }
   .vote-btn.voted { background:var(--accent-bg); border-color:var(--accent); color:var(--accent); }
   .comment-area { margin-top:10px; }
@@ -44,7 +41,6 @@
   .lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:100; align-items:center; justify-content:center; padding:40px; cursor:zoom-out; }
   .lightbox.open { display:flex; } .lightbox img { max-width:100%; max-height:90vh; border-radius:8px; }
   .banner { background:#fff4e5; border:1px solid #f0c674; border-radius:10px; padding:14px 18px; font-size:14px; margin-bottom:20px; color:#7a4f00; }
-
   .nav{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
   .nav a{font-size:13px;font-weight:600;text-decoration:none;color:var(--text-muted);padding:7px 14px;border:1px solid var(--border);border-radius:999px;background:var(--surface);}
   .nav a:hover{border-color:var(--border-hover);color:var(--text);}
@@ -54,121 +50,86 @@
 <body>
 <div class="wrap">
   <nav class="nav"><a href="models.html">최종 모델</a><a href="before-after.html">전·후 비교</a><a href="index.html" class="active">선정 투표</a></nav>
-
   <header>
-    <h1>가발 AI 모델 최종 선정 투표 <span class="live-dot" id="livedot"></span></h1>
-    <p class="sub">Higgsfield Soul 2.0 학습 모델 3종 · 3040 한국 여성 · 각 모델 대표컷 + 추가컷. 가장 적합한 모델에 투표해주세요.</p>
+    <h1>가발 AI 모델 선정 투표 <span class="live-dot" id="livedot"></span></h1>
+    <p class="sub">차수별 후보를 보고 가장 적합한 모델에 투표해주세요. 1차(이전 5명) · 2차(이번 3명).</p>
   </header>
-
   <div class="banner" id="cfg-banner" style="display:none;">⚠️ Supabase 설정이 필요합니다.</div>
-  <div class="blind-note">🔒 <b>블라인드 투표</b>입니다. 다른 사람의 득표수·투표 내역은 공개되지 않습니다(서로 영향 방지). 본인이 투표한 항목만 표시됩니다. 좋다고 생각하는 모델에 자유롭게 투표하세요(여러 개 가능).</div>
-
+  <div class="blind-note">🔒 <b>블라인드 투표</b>입니다. 다른 사람의 득표수·투표 내역은 공개되지 않습니다(서로 영향 방지). 본인이 투표한 항목만 표시됩니다. 차수별로 자유롭게 투표하세요.</div>
   <div class="meta-bar">
-    <label>이름</label>
-    <input id="name" type="text" placeholder="이름 입력" />
+    <label>이름</label><input id="name" type="text" placeholder="이름 입력" />
     <span style="color:var(--text-muted); font-size:13px;">이름 입력 후 투표·코멘트가 가능합니다.</span>
   </div>
-
+  <div class="rounds" id="rounds"></div>
+  <div class="round-sub" id="round-sub"></div>
   <div class="grid" id="grid"></div>
 </div>
-
 <div class="lightbox" id="lb" onclick="this.classList.remove('open')"><img id="lbimg" alt=""></div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://zilgveexykjkwezyhjyb.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_8EybphDKDxUA4l7j0pawgA__p2I9z4L";
-  const CDN = "";
-
-  // G3 적용 컷으로 구성한 최종 후보 3종 (model_id는 기존 M1~M5와 겹치지 않게 SEL_ 접두)
-  const MODELS = [
-    { id:'SEL_A', label:'A · 둥근·밝고 친근', desc:'30대 중반 · 따뜻하고 친근한 인상',
-      soul:'aa2cf997-e3eb-4966-b4ec-ee057289e4c3',
-      img: CDN+'img/sel_A1.webp',
-      cuts:[ CDN+'img/sel_A2.webp',
-             CDN+'img/sel_A4.webp' ] },
-    { id:'SEL_B', label:'B · 또렷·지적·시크', desc:'30대 후반 · 또렷한 이목구비, 모던/시크',
-      soul:'000b0bb7-64dd-45f5-b0b0-1e2956019e4b',
-      img: CDN+'img/sel_B1.webp',
-      cuts:[ CDN+'img/sel_B3.webp',
-             CDN+'img/sel_B4.webp' ] },
-    { id:'SEL_C', label:'C · 동안·화사·생기', desc:'40대 초반 · 동안에 화사하고 생기있는 분위기',
-      soul:'d8787dee-9583-4b15-a251-29b99d47cd2c',
-      img: CDN+'img/sel_C1.webp',
-      cuts:[ CDN+'img/sel_C2.webp',
-             CDN+'img/sel_C4.webp' ] },
+  const ROUNDS = [
+    { key:'r1', tab:'1차 · 이전 5명', sub:'초기 학습 모델 5종 (M1~M5)', models:[
+      { id:'M1', label:'M1 · 둥근·밝고 친근', desc:'30대 중반', soul:'14915dbe', img:'img/r1_M1.webp', cuts:['img/r1_M1_c1.webp','img/r1_M1_c2.webp'] },
+      { id:'M2', label:'M2 · 또렷·지적', desc:'30대 후반 · 긴 계란형', soul:'5eaefb4e', img:'img/r1_M2.webp', cuts:['img/r1_M2_c1.webp','img/r1_M2_c2.webp'] },
+      { id:'M3', label:'M3 · 시크·모던', desc:'30대 후반', soul:'26f82925', img:'img/r1_M3.webp', cuts:['img/r1_M3_c1.webp','img/r1_M3_c2.webp'] },
+      { id:'M4', label:'M4 · 우아·따뜻', desc:'30대 후반', soul:'aa1248d3', img:'img/r1_M4.webp', cuts:['img/r1_M4_c1.webp','img/r1_M4_c2.webp'] },
+      { id:'M5', label:'M5 · 동안·화사', desc:'40대 초반', soul:'ae8444f8', img:'img/r1_M5.webp', cuts:['img/r1_M5_c1.webp','img/r1_M5_c2.webp'] },
+    ]},
+    { key:'r2', tab:'2차 · 이번 3명 (현재)', sub:'가발 착용 전·후까지 제작한 최종 3모델', models:[
+      { id:'SEL_A', label:'A · 둥근·밝고 친근', desc:'30대 중반', soul:'aa2cf997', img:'img/sel_A1.webp', cuts:['img/sel_A2.webp','img/sel_A4.webp'] },
+      { id:'SEL_B', label:'B · 또렷·지적·시크', desc:'30대 후반', soul:'000b0bb7', img:'img/sel_B1.webp', cuts:['img/sel_B3.webp','img/sel_B4.webp'] },
+      { id:'SEL_C', label:'C · 동안·화사·생기', desc:'40대 초반', soul:'d8787dee', img:'img/sel_C1.webp', cuts:['img/sel_C2.webp','img/sel_C4.webp'] },
+    ]},
   ];
-
+  let curRound = 'r2';
   const configured = SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20;
   let sb = null;
   if (!configured) { document.getElementById('cfg-banner').style.display='block'; }
   else { sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); document.getElementById('livedot').classList.add('on'); }
-
   function myName(){ return (document.getElementById('name').value||'').trim(); }
-  function myVotesKey(){ return 'bnh_sel_myvotes_' + myName(); }
-  function myVotes(){ try { return JSON.parse(localStorage.getItem(myVotesKey())||'[]'); } catch(e){ return []; } }
-  function setMyVotes(a){ localStorage.setItem(myVotesKey(), JSON.stringify(a)); }
-
+  function mvKey(){ return 'bnh_sel_myvotes_'+myName(); }
+  function myVotes(){ try { return JSON.parse(localStorage.getItem(mvKey())||'[]'); } catch(e){ return []; } }
+  function setMyVotes(a){ localStorage.setItem(mvKey(), JSON.stringify(a)); }
+  function models(){ return ROUNDS.find(r=>r.key===curRound).models; }
   async function toggleVote(id){
-    const name = myName();
-    if (!name){ alert('먼저 이름을 입력해주세요.'); return; }
-    const mine = myVotes();
-    const has = mine.includes(id);
-    if (has){
-      // 취소 — 블라인드(anon SELECT 차단) 환경에서 DELETE가 안 되므로 SECURITY DEFINER RPC 사용
-      const { error } = await sb.rpc('cancel_wig_vote', { p_model_id:id, p_voter_name:name });
-      if (error){ console.warn(error); }
-      setMyVotes(mine.filter(x=>x!==id));
-    } else {
-      const { error } = await sb.from('wig_votes').insert({ model_id:id, voter_name:name });
-      if (error && error.code !== '23505'){ alert('투표 저장 중 오류: '+error.message); return; } // 23505=이미 투표(unique)
-      if (!mine.includes(id)) mine.push(id);
-      setMyVotes(mine);
-    }
+    const name=myName(); if(!name){ alert('먼저 이름을 입력해주세요.'); return; }
+    const mine=myVotes(); const has=mine.includes(id);
+    if(has){ const {error}=await sb.rpc('cancel_wig_vote',{p_model_id:id,p_voter_name:name}); if(error)console.warn(error); setMyVotes(mine.filter(x=>x!==id)); }
+    else { const {error}=await sb.from('wig_votes').insert({model_id:id,voter_name:name}); if(error&&error.code!=='23505'){ alert('투표 저장 오류: '+error.message); return; } mine.push(id); setMyVotes(mine); }
     render();
   }
-
   async function addComment(id){
-    const name = myName();
-    if (!name){ alert('먼저 이름을 입력해주세요.'); return; }
-    const ta = document.getElementById('c-'+id);
-    const body = ta.value.trim();
-    if (!body) return;
-    ta.value = '';
-    const { error } = await sb.from('wig_comments').insert({ model_id:id, author:name, body });
-    const fb = document.getElementById('cs-'+id);
-    fb.textContent = error ? '전송 실패: '+error.message : '의견이 전달되었습니다. 감사합니다!';
-    setTimeout(()=>{ fb.textContent=''; }, 4000);
+    const name=myName(); if(!name){ alert('먼저 이름을 입력해주세요.'); return; }
+    const ta=document.getElementById('c-'+id); const body=ta.value.trim(); if(!body)return; ta.value='';
+    const {error}=await sb.from('wig_comments').insert({model_id:id,author:name,body});
+    const fb=document.getElementById('cs-'+id); fb.textContent=error?'전송 실패':'의견이 전달되었습니다. 감사합니다!'; setTimeout(()=>fb.textContent='',4000);
   }
-
   function zoom(src){ document.getElementById('lbimg').src=src; document.getElementById('lb').classList.add('open'); }
-
+  function renderTabs(){
+    document.getElementById('rounds').innerHTML = ROUNDS.map(r=>`<button class="${r.key===curRound?'on':''}" onclick="switchRound('${r.key}')">${r.tab}</button>`).join('');
+    document.getElementById('round-sub').textContent = ROUNDS.find(r=>r.key===curRound).sub;
+  }
+  function switchRound(k){ curRound=k; renderTabs(); render(); }
   function render(){
-    const mine = myVotes();
-    document.getElementById('grid').innerHTML = MODELS.map(m=>{
-      const voted = mine.includes(m.id);
-      return `
-      <div class="card ${voted?'mine':''}">
-        <div class="imgwrap"><img src="${m.img}" alt="${m.label}" onclick="zoom('${m.img}')"></div>
-        ${m.cuts && m.cuts.length ? `<div class="thumb-row">${m.cuts.map(s=>`<img class="thumb" src="${s}" onclick="zoom('${s}')">`).join('')}</div>`:''}
-        <div class="card-body">
-          <div class="label">${m.label}</div>
-          <div class="desc">${m.desc}</div>
-          <div class="soul-id">soul: ${m.soul.slice(0,8)}</div>
+    const mine=myVotes();
+    document.getElementById('grid').innerHTML = models().map(m=>{
+      const voted=mine.includes(m.id);
+      const thumbs=(m.cuts||[]).map(s=>`<img class="thumb" src="${s}" loading="lazy" onclick="zoom('${s}')">`).join('');
+      return `<div class="card ${voted?'mine':''}">
+        <div class="imgwrap"><img src="${m.img}" loading="lazy" alt="${m.label}" onclick="zoom('${m.img}')"></div>
+        ${thumbs?`<div class="thumb-row">${thumbs}</div>`:''}
+        <div class="card-body"><div class="label">${m.label}</div><div class="desc">${m.desc}</div>
+          <div class="soul-id">soul: ${m.soul}</div>
           <button class="vote-btn ${voted?'voted':''}" onclick="toggleVote('${m.id}')">${voted?'✓ 투표함 (취소하려면 클릭)':'👍 이 모델에 투표'}</button>
-          <div class="comment-area">
-            <textarea id="c-${m.id}" placeholder="이 모델에 대한 의견 (선택)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addComment('${m.id}')}"></textarea>
-            <div class="csent" id="cs-${m.id}"></div>
-          </div>
-        </div>
-      </div>`;
+          <div class="comment-area"><textarea id="c-${m.id}" placeholder="이 모델에 대한 의견 (선택)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addComment('${m.id}')}"></textarea><div class="csent" id="cs-${m.id}"></div></div>
+        </div></div>`;
     }).join('');
   }
-
-  const nameInput = document.getElementById('name');
-  nameInput.value = localStorage.getItem('bnh_name') || '';
-  nameInput.addEventListener('input', ()=>{ localStorage.setItem('bnh_name', nameInput.value); render(); });
-  render();
+  const nameInput=document.getElementById('name');
+  nameInput.value=localStorage.getItem('bnh_name')||'';
+  nameInput.addEventListener('input',()=>{ localStorage.setItem('bnh_name',nameInput.value); render(); });
+  renderTabs(); render();
 </script>
-</body>
-</html>
+</body></html>
